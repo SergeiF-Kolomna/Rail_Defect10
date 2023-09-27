@@ -105,12 +105,19 @@ if dark_spots:
                 for new_spot_list in dark_spots_dict:
                     (x, y, w, h, dimensions) = dark_spots_dict[new_spot_list]
                     cv2.rectangle(temp2_image, (x + frame_start[0], y + frame_start[1]), (x + frame_start[0] + w, y + frame_start[1] + h), (255, 175, 0), 2)
-                cv2.putText(temp2_image, f"Summary Square: {sum:.5f} cm^2", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
+                cv2.putText(temp2_image, f"Summary Square: {sum:.5f} cm^2", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+                
+                cv2.putText(temp2_image, 'Number of defects: '+ len(dark_spots_dict) + ' pcs', (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+            # save text table
             my_txt_file_name = file_name.replace('.jpg', '.txt')
             my_txt_file = open('E:/AAA/Defect19/' + my_txt_file_name, "w+")
-            my_txt_file.write('Имя файла ' + '\t' + ' Обнаружено дефектов ' + '\t' + ' Общая площадь дефектов,кв.см. ' + '\t' + ' Средняя площадь дефекта,кв.см. ' + '\n')
-            my_txt_file.write(my_txt_file_name + '\t' + str(len(dark_spots_dict)) + '\t' + str("{:.2f}".format(sum)) + "\t" + str("{:.2f}".format(sum/len(dark_spots_dict))))
+            my_txt_file.write('Имя файла ' + '\t' + ' Обнаружено дефектов ' + '\t' + ' Общая площадь дефектов,кв.см. ' + '\t' + ' Средняя площадь дефекта,кв.см. ' + '\t' + ' Настройки HSV нижние - HSV верхние ' + '\n')
+            my_txt_file.write(my_txt_file_name + '\t' + str(len(dark_spots_dict)) + '\t' + str("{:.2f}".format(sum)) + "\t" + str("{:.2f}".format(sum/len(dark_spots_dict))) + "\t" + 'HSVU - HSVL')
             my_txt_file.close()
+            # save image with rectangles
+            my_jpg_file_name = '__'+file_name
+            isWritten = cv2.imwrite('E:/AAA/Defect19/' + my_jpg_file_name, temp2_image)
+            if isWritten: print('Image is successfully saved as _'+ my_jpg_file_name+' *.jpg file.')
 
         #  /// окончание куска кода для  отображения окошка со списком найденных дефектов
         temp_list=list(dark_spots_dict.keys())
