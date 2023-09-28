@@ -23,12 +23,13 @@ dark_spots_dict = {}
 sum=0
 #first_enter=False #  bool variable for once fill the list
 ipass = 0
+len_def_sum = 0     # variable for summary defects length
 
 def calculate_distance(p1, p2):
     return (p2[0] - p1[0]) 
    
 try:
-    threshold_value, image_mini, dark_spots, frame_start, frame_end, point1, point2, file_path = ft.main()
+    threshold_value, image_mini, dark_spots, frame_start, frame_end, point1, point2, file_path, LH, LS, LV, UH, US, UV = ft.main()
 except:
     pass
     
@@ -76,7 +77,7 @@ if dark_spots:
             temp2_image = image_mini.copy()
             for new_spot_list in dark_spots_dict:
                 (x, y, w, h, dimensions) = dark_spots_dict[new_spot_list]
-                cv2.rectangle(temp2_image, (x + frame_start[0], y + frame_start[1]), (x + frame_start[0] + w, y + frame_start[1] + h), (255, 175, 0), 2)
+                cv2.rectangle(temp2_image, (x + frame_start[0], y + frame_start[1]), (x + frame_start[0] + w, y + frame_start[1] + h), (235, 0, 255), 2)
             ipass-=1
         elif e == 'Cancel':
             window_list.close()
@@ -99,25 +100,33 @@ if dark_spots:
             for i in dark_spots_dict:
                 sum += dark_spots_dict[i][4]
             try:
-                cv2.putText(temp2_image, f"Summary Square: {sum:.5f} cm^2", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
+                cv2.putText(temp2_image, f"Summary Square: {sum:.3f} cm^2", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (235, 0, 255), 3)
+                cv2.putText(temp2_image, 'Number of defects: '+ str(len(dark_spots_dict)) + ' pcs', (100, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (235, 0, 255), 2)
             except:
                 temp2_image = image_mini.copy()
                 for new_spot_list in dark_spots_dict:
                     (x, y, w, h, dimensions) = dark_spots_dict[new_spot_list]
-                    cv2.rectangle(temp2_image, (x + frame_start[0], y + frame_start[1]), (x + frame_start[0] + w, y + frame_start[1] + h), (255, 175, 0), 2)
-                cv2.putText(temp2_image, f"Summary Square: {sum:.5f} cm^2", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
-                
-                cv2.putText(temp2_image, 'Number of defects: '+ len(dark_spots_dict) + ' pcs', (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
+                    cv2.rectangle(temp2_image, (x + frame_start[0], y + frame_start[1]), (x + frame_start[0] + w, y + frame_start[1] + h), (235, 0, 255), 2)
+                cv2.putText(temp2_image, f"Summary Square: {sum:.3f} cm^2", (100, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (235, 0, 255), 2)
+                cv2.putText(temp2_image, 'Number of defects: '+ str(len(dark_spots_dict)) + ' pcs', (100, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (235, 0, 255), 2)
+            # calculate summary defects length
+            for j in dark_spots_dict:
+                len_def_sum += dark_spots_dict[j][2]/(calculate_distance(point1, point2)/etalon_line)
             # save text table
             my_txt_file_name = file_name.replace('.jpg', '.txt')
             my_txt_file = open('E:/AAA/Defect19/' + my_txt_file_name, "w+")
-            my_txt_file.write('Имя файла ' + '\t' + ' Обнаружено дефектов ' + '\t' + ' Общая площадь дефектов,кв.см. ' + '\t' + ' Средняя площадь дефекта,кв.см. ' + '\t' + ' Настройки HSV нижние - HSV верхние ' + '\n')
-            my_txt_file.write(my_txt_file_name + '\t' + str(len(dark_spots_dict)) + '\t' + str("{:.2f}".format(sum)) + "\t" + str("{:.2f}".format(sum/len(dark_spots_dict))) + "\t" + 'HSVU - HSVL')
+            my_txt_file.write('Имя файла ' + '\t' + ' Обнаружено дефектов ' + '\t' + ' Общая площадь дефектов,кв.см. ' + '\t' + ' Средняя площадь дефекта,кв.см. '+ '\t' + 'Общая длина дефектов' + '\t' + ' Настройки HSV нижние - HSV верхние ' + '\n')
+            my_txt_file.write(my_txt_file_name + '\t' + str(len(dark_spots_dict)) + '\t' + str("{:.2f}".format(sum)) + "\t" + str("{:.2f}".format(sum/len(dark_spots_dict))) + "\t" + str("{:.2f}".format(len_def_sum)) + "\t"
+                              + ' ' + str(LH) + ' ' + str(LS) + ' ' + str(LV) + ' ' + str(UH) + ' ' + str(US) + ' ' + str(UV)+ '\n')
+            my_txt_file.write('Номер дефекта' + '\t' + 'Длина' + '\t' + 'Ширина' + '\t' + 'Площадь' + '\n')
+            for j in dark_spots_dict:
+                my_txt_file.write(str(j) + '\t' + str("{:.2f}".format(dark_spots_dict[j][2]/(calculate_distance(point1, point2)/etalon_line))) + '\t' + str("{:.2f}".format(dark_spots_dict[j][3]/(calculate_distance(point1, point2)/etalon_line))) + '\t' + str("{:.2f}".format(dark_spots_dict[j][4])) + '\n')
             my_txt_file.close()
             # save image with rectangles
-            my_jpg_file_name = '__'+file_name
+            my_jpg_file_name = '_'+file_name
             isWritten = cv2.imwrite('E:/AAA/Defect19/' + my_jpg_file_name, temp2_image)
             if isWritten: print('Image is successfully saved as _'+ my_jpg_file_name+' *.jpg file.')
+            len_def_sum = 0
 
         #  /// окончание куска кода для  отображения окошка со списком найденных дефектов
         temp_list=list(dark_spots_dict.keys())

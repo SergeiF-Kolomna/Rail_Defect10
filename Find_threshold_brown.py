@@ -202,7 +202,7 @@ def main():
             if key == ord("a") and frame_start and frame_end:
                 on_key(key)
 
-        return threshold_value, image_mini, dark_spots, frame_start, frame_end, point1, point2, values[0]
+        return threshold_value, image_mini, dark_spots, frame_start, frame_end, point1, point2, values[0], LH, LS, LV, UH, US, UV
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
